@@ -1,0 +1,57 @@
+# Configuration file read by Docker to orchestrate multiple containers as a single application.
+# Instead of starting multiple containers manually, everything is defined here and handled by Docker.
+services:
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: doccollab
+      POSTGRES_USER: doccollab
+      POSTGRES_PASSWORD: doccollab
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: doccollab
+      DB_USERNAME: doccollab
+      DB_PASSWORD: doccollab
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+  sync:
+    build:
+      context: ./sync
+    ports:
+      - "1234:1234"
+    depends_on:
+      - backend
+    environment:
+      PORT: 1234
+      BACKEND_URL: http://backend:8080
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - sync
+
+volumes:
+  postgres_data:
