@@ -6,6 +6,12 @@ import { createRequire } from 'module'
 /**
  * Yjs only exists as JS library. To make it work with the Java backend, we run a small Node microservice to handle moving
  * CRDT updates between clients as fast as possible. Java still owns the stateful logic.
+ * Inside websocket memory:
+ * rooms = {
+ *   "doc_1": Set([wsConnection_A, wsConnection_B]),
+ *   "doc_2": Set([wsConnection_C, wsConnection_D])
+ * }
+ * Changes made by any client are picked up by the Yjs WebSocket provider and broadcast to all other connections in the same document room.
  */
 
 // y-websocket 1.x ships CommonJS utilities; bridge them into this ESM module
